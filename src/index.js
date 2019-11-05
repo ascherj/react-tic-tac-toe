@@ -52,6 +52,7 @@ class Game extends React.Component {
       }],
       stepNumber: 0,
       xIsNext: true,
+      selectedOption: 'ascending',
     };
   }
 
@@ -80,6 +81,12 @@ class Game extends React.Component {
     });
   }
 
+  handleOptionChange(event) {
+    this.setState({
+      selectedOption: event.target.value
+    });
+  }
+
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
@@ -99,6 +106,10 @@ class Game extends React.Component {
       );
     });
 
+    const sortedMoves = this.state.selectedOption === 'descending' ?
+      moves.slice().reverse() :
+      moves.slice();
+
     let status;
     if (winner) {
       status = 'Winner: ' + winner;
@@ -116,7 +127,30 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{moves}</ol>
+          <br></br>
+          <div id="sort-buttons">
+            <div>
+              <input
+                type="radio"
+                id="ascending"
+                name="sort"
+                value="ascending"
+                checked={this.state.selectedOption === 'ascending'}
+                onChange={this.handleOptionChange.bind(this)} />
+              <label htmlFor="ascending">Ascending</label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                id="descending"
+                name="sort"
+                value="descending"
+                checked={this.state.selectedOption === 'descending'}
+                onChange={this.handleOptionChange.bind(this)} />
+              <label htmlFor="descending">Descending</label>
+            </div>
+          </div>
+          <ul>{sortedMoves}</ul>
         </div>
       </div>
     );
