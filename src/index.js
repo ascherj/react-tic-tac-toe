@@ -3,8 +3,10 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 function Square(props) {
+  const classes = 'square' + (props.winningSquare ? ' winning-square' : '');
+
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className={classes} onClick={props.onClick}>
       {props.value}
     </button>
   )
@@ -17,6 +19,7 @@ class Board extends React.Component {
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
         key={i}
+        winningSquare={this.props.winningSquares.includes(i)}
       />
     );
   }
@@ -53,6 +56,7 @@ class Game extends React.Component {
       stepNumber: 0,
       xIsNext: true,
       selectedOption: 'ascending',
+      winningSquares: []
     };
   }
 
@@ -71,13 +75,24 @@ class Game extends React.Component {
       }]),
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
+    }, () => {
+      // After updating the state, check if there is a winner
+      const winner = calculateWinner(squares);
+      if (winner) {
+        this.setState({
+          winningSquares: winner.squares
+        });
+      }
     });
   }
 
   jumpTo(step) {
+    const winner = calculateWinner(this.state.history[step].squares);
+
     this.setState({
       stepNumber: step,
       xIsNext: (step % 2) === 0,
+      winningSquares: winner ? winner.squares : []
     });
   }
 
@@ -111,8 +126,8 @@ class Game extends React.Component {
       moves.slice();
 
     let status;
-    if (winner) {
-      status = 'Winner: ' + winner;
+    if (winner && winner.player) {
+      status = 'Winner: ' + winner.player;
     } else {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
     }
@@ -123,6 +138,7 @@ class Game extends React.Component {
           <Board
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
+            winningSquares={this.state.winningSquares}
           />
         </div>
         <div className="game-info">
@@ -178,7 +194,10 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return ({
+        player: squares[a],
+        squares: [a, b, c]
+      });
     }
   }
   return null;
