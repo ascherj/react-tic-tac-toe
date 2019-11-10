@@ -56,8 +56,14 @@ class Game extends React.Component {
       stepNumber: 0,
       xIsNext: true,
       selectedOption: 'ascending',
-      winningSquares: []
+      winningSquares: [],
+      isTie: false
     };
+  }
+
+  isTie(squares) {
+    const winner = calculateWinner(squares);
+    return !squares.includes(null) && !winner;
   }
 
   handleClick(i) {
@@ -76,23 +82,25 @@ class Game extends React.Component {
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
     }, () => {
-      // After updating the state, check if there is a winner
+      // After updating the state, check for winner or tie
       const winner = calculateWinner(squares);
-      if (winner) {
-        this.setState({
-          winningSquares: winner.squares
-        });
-      }
+
+      this.setState({
+        winningSquares: winner ? winner.squares : [],
+        isTie: this.isTie(squares)
+      });
     });
   }
 
   jumpTo(step) {
-    const winner = calculateWinner(this.state.history[step].squares);
+    const squares = this.state.history[step].squares;
+    const winner = calculateWinner(squares);
 
     this.setState({
       stepNumber: step,
       xIsNext: (step % 2) === 0,
-      winningSquares: winner ? winner.squares : []
+      winningSquares: winner ? winner.squares : [],
+      isTie: this.isTie(squares)
     });
   }
 
@@ -128,6 +136,8 @@ class Game extends React.Component {
     let status;
     if (winner && winner.player) {
       status = 'Winner: ' + winner.player;
+    } else if (this.state.isTie) {
+      status = 'It\'s a tie!';
     } else {
       status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
     }
